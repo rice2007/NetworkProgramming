@@ -13,12 +13,12 @@
 int main(int argc, char *argv[]) {
 
 	char buffer[1024];
-	int client_socket;
+	int client_socket, n;
 	struct sockaddr_in Remote_Address;
 	struct hostent *hp;
 
-	if (argc != 3) {
-		printf("Incorrect args: <server IP> <port>\n");
+	if (argc != 4) {
+		printf("Incorrect args: <server IP> <port> <message>\n");
 		exit(0);
 	}
 
@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
 		exit(0);
 	}
 
-	printf("client_socket: %d\n", client_socket);
 	bzero(&Remote_Address, sizeof(Remote_Address));
 	Remote_Address.sin_family = AF_INET;
 	hp = gethostbyname(argv[1]);
@@ -56,29 +55,13 @@ int main(int argc, char *argv[]) {
 
 	printf("Connection successful\n");
 
-	while (1) {
-		printf("Awaiting input...\n");
-		scanf("%s", buffer);
-		if (strcmp(buffer, "end") == 0) {
-			write(client_socket, buffer, strlen(buffer + 1));
-			close(client_socket);
-			//exit(0);
-		} else if (strcmp(buffer, "quit") == 0) {
-			write(client_socket, buffer, strlen(buffer + 1))	;
-			close(client_socket);
-			exit(0);
-		} else {
-			write(client_socket, buffer, strlen(buffer - 1));
-			read(client_socket, buffer, strlen(buffer - 1));
-			printf("Server message: %s\n", buffer);
-		}
-	}
-/*	while(1) {
-		write(client_socket, argv[2], strlen(argv[2]));
-		read (client_socket, buffer, 512);
-		printf("CLIENT: message from server: %s \n", buffer);
-		close(client_socket);
-		printf("CLIENT: exit \n");
-		exit(0);
-	}*/
+	bzero(buffer, 1024);
+	n = write(client_socket, argv[3], strlen(argv[3]) + 1);
+	printf("Write status: %d\n", n);
+	bzero(buffer, 1024);
+	n = read(client_socket, buffer, sizeof(buffer));
+	printf("Write status: %d\n", n);
+	printf("Buffer: %s\n", buffer);
+	
+	exit(0);
 }
