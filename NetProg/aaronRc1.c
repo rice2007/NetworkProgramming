@@ -1,27 +1,84 @@
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include <unistd.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
 
 	char buffer[1024];
 	int client_socket;
 	struct sockaddr_in Remote_Address;
 	struct hostent *hp;
 
+	if (argc != 3) {
+		printf("Incorrect args: <server IP> <port>\n");
+		exit(0);
+	}
+
 	client_socket = socket(AF_INET, SOCK_STREAM, 0);
-	bzero (&Remote_Address, sizeOf(Remote_Address));
+	if (client_socket < 0 ) {
+		printf("errno = %d\n", errno);
+		printf("Error creating socket\n");
+		exit(0);
+	}
+
+	printf("client_socket: %d\n", client_socket);
+	bzero(&Remote_Address, sizeof(Remote_Address));
 	Remote_Address.sin_family = AF_INET;
 	hp = gethostbyname(argv[1]);
-	Remote_Address.sin_port = htons(4096);
+	if (hp == NULL) {
+		printf("errno = %d\n", errno);
+		printf("Host does not exist\n");
+		exit(0);
+	}
+	if (inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) == 0) {
+		printf("Invalid network address\n");
+		exit(0);
+	} else if ((inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) < 0)) {
+		printf("errno = %d\n", errno);
+		printf("Invalid address family\n");
+		exit(0);
+	}
+	Remote_Address.sin_port = htons(atoi(argv[2]));
 
-	connect(client_socket, (struct sockadder *) &Remote_Address, sizeOf(Remote_Address) < 0);
-	write(client_socket, argv[2], strlen(argv[2]) + 1);
-	read (buffer, 512);
-	printf("CLIENT: message from server: %s \n", buffer);
-	close(client_socket);
-	printf("CLIENT: exit \n");
-	exit(0);
+	if (connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address)) < 0) {
+		printf("errno = %d\n", errno);
+		printf("Cannot connect\n");
+		exit(0);
+	}
+
+	printf("Connection successful\n");
+
+	while (1) {
+		printf("Awaiting input...\n");
+		scanf("%s", buffer);
+		if (strcmp(buffer, "end") == 0) {
+			write(client_socket, buffer, strlen(buffer + 1));
+			close(client_socket);
+			//exit(0);
+		} else if (strcmp(buffer, "quit") == 0) {
+			write(client_socket, buffer, strlen(buffer + 1))	;
+			close(client_socket);
+			exit(0);
+		} else {
+			write(client_socket, buffer, strlen(buffer - 1));
+			read(client_socket, buffer, strlen(buffer - 1));
+			printf("Server message: %s\n", buffer);
+		}
+	}
+/*	while(1) {
+		write(client_socket, argv[2], strlen(argv[2]));
+		read (client_socket, buffer, 512);
+		printf("CLIENT: message from server: %s \n", buffer);
+		close(client_socket);
+		printf("CLIENT: exit \n");
+		exit(0);
+	}*/
 }
