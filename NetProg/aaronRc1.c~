@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in Remote_Address;
 	struct hostent *hp;
 
-	if (argc != 4) {
-		printf("Incorrect args: <server IP> <port> <message>\n");
+	if (argc != 3) {
+		printf("Incorrect args: <server IP> <port>\n");
 		exit(0);
 	}
 
@@ -48,24 +48,36 @@ int main(int argc, char *argv[]) {
 	Remote_Address.sin_port = htons(atoi(argv[2]));
 
 	if (connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address)) < 0) {
-		perror("connect");
+		printf("errno = %d\n", errno);
+		printf("Cannot connect\n");
 		exit(0);
 	}
 
 	printf("Connection successful\n");
-
-	bzero(buffer, 1024);
-	strcpy(buffer, argv[3]);
-
-	while(1) {
-		n = write(client_socket, buffer, sizeof(buffer));
-		printf("Write status: %d\n", n);
-		bzero(buffer, 1024);
-		n = read(client_socket, buffer, sizeof(buffer));
-		printf("Read status: %d\n", n);
-		printf("Server msg: %s", buffer);
-		fgets(buffer, sizeof(buffer), stdin);
+/*
+	while (1) {
+		printf("Awaiting input...\n");
+		scanf("%s", buffer);
+		if (strcmp(buffer, "end") == 0) {
+			write(client_socket, buffer, strlen(buffer + 1));
+			close(client_socket);
+			//exit(0);
+		} else if (strcmp(buffer, "quit") == 0) {
+			write(client_socket, buffer, strlen(buffer + 1))	;
+			close(client_socket);
+			exit(0);
+		} else {
+			write(client_socket, buffer, strlen(buffer - 1));
+			read(client_socket, buffer, strlen(buffer - 1));
+			printf("Server message: %s\n", buffer);
+		}
 	}
-	
+*/
+	while ( (n = read(client_socket, buffer, 1023)) > 0) {
+		buffer[n] = 0;
+		if (fputs(buffer, stdout) == EOF) {
+			printf("fputs error");
+		}
+	}
 	exit(0);
 }
