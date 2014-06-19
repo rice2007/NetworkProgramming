@@ -1,0 +1,100 @@
+Fork
+	Two copies of a program is made to execute
+	Returns process ID to parent
+	Return 0 to child
+	e.g.
+		i = accept();
+		j=fork();
+		if (j == 0) {
+			echo();
+		}
+		close(i);
+
+		i = fork();
+		if (i == 0) {
+			doChildStuff();
+			exit(0); //Must exit
+		}
+
+		/* Creates 255 child processes. Must include if check to prevent
+			creation of 2^255 child porcesses. */
+		for (i = 0, i < 255; i++) {
+			i = fork();
+			if (i == 0) {
+			doChildStuff();
+			exit(0); //Must exit
+			}
+		}
+
+		/* Fork example. Creates a fork child. Parent process sleeps for 5sec
+			while child process sleeps for two. Will reach child print msg
+			before the parent process will reach theirs.
+
+			If parent exit is commented out, the child will continue to run.
+			If child exit is commented out, the parent process will exit back
+			to the shell since the shell is the parent's parent
+
+			Error, Proc(ess) table is full. Kill with ctrl + C immediately */
+		main() {
+			int i, j;
+			printf("Output\n");
+			for (j = 0) {
+				i = fork();
+				//parent
+				if (i) {
+					sleep(5);
+					printf("Hello parent");
+					exit(0);
+
+				} else {
+				//child
+					sleep(2);
+					printf("Hello child");
+					exit(0);
+				}
+			}
+			sleep(10);
+		}
+
+	Race condition
+		Do not let two processe read/write the same thing e.g. socket
+
+Termination of Child Process
+	In example above, the children become zombies (defunc)
+	When parent process terminates, children terminate
+	Signals
+		/* Starts all children instantly. Parent sleeps. Will catch signal 20 for child 		terminating. All children will not exit at the same time. Will always return at 	least 1 signal but no more than 10. Signals cannot be used as counters 
+		void SignalInterrupt(int sigtype) {
+			printf("caught a sig %d\n", sigtype);
+			while(1) {
+				int status. r;
+				r = waitpid(-1, &status, WNOHANG); //-1 means any procoess, WNOHANG nothing hanging don't wait
+				if r <= 0) {
+					return;
+				}
+				printf("exit status = %d %x\n", WEXITSTATUS(status), status);
+			}
+		}
+		int main(...usual...) {
+			int i;
+			singal(SIGHCHILD, SignalInterrupt);
+			while (counter < 10) {
+				counter++;
+				printf("creating process")
+				i = fork();
+				if (i == 0) {
+					sleep(4);
+					exit(counter * 10 + counter);
+				}
+			}
+			while (1) {
+				int ret = sleep(15);
+				printf("ret =%d\n", ret);
+				if (ret == 0) {
+					break;
+				}
+			}
+		}
+
+		On every system call, do an error check.
+			e.g. read, write, fork, bind, accept

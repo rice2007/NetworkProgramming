@@ -1,0 +1,48 @@
+accept no new connections
+when other two connects end, then close
+
+Signals
+	Passive in that they occur and nothing happens
+	Active in that they will return an error and terminate
+
+	Write procedure that never gets called
+	Most common is HUP (hang up)
+	Signal handler will intercept the signal to execute a given routine
+	SigChild
+		Lets parent process know that sonething has (not) been completed
+	Signal Handler
+		Never called
+		Must return void
+		Accepts one argument
+		Use system signal call to watch for a given signal 
+			signal(SIGINT, SignalInterrupt); //No parenthesis because it is pointer to function
+			void SignalInterrupt(int sigtype) {
+				printf("caught signal %d", sigtype);
+				counter++;
+			}
+			Signals cannot be used to count
+				If the handler has not handled the signal when another signal executes, then it's only counted once
+		Any system call that can block must be checked for EINTR
+			Reads will be terminated abnormally
+			Blocks
+				Read, write, connect, accept, gethostbyname, select
+				Must only be checked after child process has been created (fork)
+					When child process terminates, ONLY notify parent
+	SIGCHLD (20)
+		child status has changed
+		child can send one byte of data back to parent as an update
+		if signal is not handled, processes build up as zombies taking resources
+Select
+	Implemented on both server and client
+	Want to know the return bit
+		1 if something to be done
+		0 if nothing to be done
+	Check if server bit is set
+		First get data from the Server
+		Get data from the client
+	Returns
+		return value -1 is an error
+
+	e.g.
+
+	fd[i++] = accept() //give array of fd
