@@ -10,6 +10,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+void connectWrapper(int err) {
+	if (err < 0) {
+		perror("connect");
+	}
+	exit(err);
+}
+
 int main(int argc, char *argv[]) {
 
 	char buffer[1024];
@@ -47,10 +54,9 @@ int main(int argc, char *argv[]) {
 	}
 	Remote_Address.sin_port = htons(atoi(argv[2]));
 
-	if (connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address)) < 0) {
-		perror("connect");
-		exit(0);
-	}
+	connectWrapper(connect(client_socket, (struct sockaddr *) &Remote_Address,
+	 sizeof(Remote_Address)));
+
 
 	printf("Connection successful\n");
 
@@ -63,7 +69,7 @@ int main(int argc, char *argv[]) {
 		bzero(buffer, 1024);
 		n = read(client_socket, buffer, sizeof(buffer));
 		printf("Read status: %d\n", n);
-		printf("Server msg: %s", buffer);
+		printf("Server msg: %s\n", buffer);
 		fgets(buffer, sizeof(buffer), stdin);
 	}
 	

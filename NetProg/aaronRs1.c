@@ -10,68 +10,104 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/*void printError(int err) {
+	if (err < 0) {
+		perror
+	}
+}*/
 
 int main(int argc, char *argv[]) {
 
 	char buffer[1024];
-	fd_set fds;
-	int listenfd, connfd;
-	// int nread, nready, ns1, ns2, reader;
-	struct sockaddr_in serv_addr;
-
+	int client[FD_SETSIZE], connfd, listenfd, maxfd, sockfd;
+	int err, i, maxi, nready;
+	ssize_t n;
+	struct sockaddr_in client_addr, server_addr;
+	fd_set rset, allset;
+	socklen_t client_length;
+	
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd < 0) {
-		printf("server sock: %d\n", listenfd);
+		perror("socket");
 	}
-	bzero(&serv_addr, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htons(INADDR_ANY);
-	serv_addr.sin_port = htons(10500); //Listening port
+	bzero(&server_addr, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = htons(INADDR_ANY);
+	server_addr.sin_port = htons(10500); //Listening port
 
-	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	if ( (bind(listenfd, (struct sockaddr*)&server_addr, sizeof(server_addr)))
+		< 0) {
+		perror("bind");
+	}
+	if ( (listen(listenfd, 2)) < 0 ) {
+		perror("listen");
+	}
+	maxfd = listenfd;
+	maxi =-1;
+	for (i = 0; i <= FD_SETSIZE; i++) {
+		client[i] = -1;
+	}
+	if ( (FD_ZERO(&allset) < 0 ) {
+		perror("FD_ZERO");
+	}
+	if ( (FD_SET(listenfd, &allset) < 0) {
+		perror("FD_SET");
+	}
 
-	listen(listenfd, 2);
+	while(1) {
+		rset = allset; 
+		nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
+		if (FD_ISSET(listenfd, &rset)) {
+			client_length = sizeof(client_addr);
+			connfd = accept(listenfd, (struct sockaddr*) &client_addr, &client_length);
+			if (connfd < 0) {
+				perror("accept");
+			}
+			for (i = 0; i < FD_SETSIZE; i++) 
+				if (client[i] < 0) {
+					client[i] = connfd;
+					break;
+				}
+			if (i == FD_SETSIZE) {
+				//Client max
+			}
 
-	// if ((ns1 = accept(listenfd, (struct sockaddr *) NULL, NULL)) < 0) {
-	// perror("accept ns1");
-	// exit(1);
-	// }
+			FD_SET(connfd, &allset);
+			if (connfd > maxfd) {
+				maxfd = connfd;
+			}
+			if (i > maxi) {
+				maxi = i;
+			}
+			if(--nready <= 0) {
+				continue;
+			}
+		}
 
-	// /* Accept another connection. */
-	// if ((ns2 = accept(listenfd, (struct sockaddr *) NULL, NULL)) < 0) {
-	// perror("accept ns2");
-	// exit(1);
-	// }
+		for (i = 0; i <= maxi; i++) {
+			sockfd = client[i];
+			if (sockfd < 0) {
+				continue;
+			}
+			if (FD_ISSET(sockfd, &rset)) {
+				n = read(sockfd, buffer, sizeof(buffer));
+				printf("Msg from socket %d: %s\n", sockfd, buffer);
+				if (n = 0) {
+					close(sockfd);
+					FD_CLR(sockfd, &allset);
+					client[i] = -1;
+				} else {
+					write(sockfd, buffer, sizeof(buffer));
+				}
 
+				if (--nready <= 0) {
+					break;
+				}
+			}
+		}
+	}
 
-	// while(1) {
-	// 	FD_ZERO(&fds);
-	// 	FD_SET(ns1, &fds);
-	// 	FD_SET(ns2, &fds);
-	// 	reader = select(3, &fds, 0, 0, 0);
-	// 	if ( FD_ISSET(ns1, &fds)) {
-	// 		nread = recv(ns1, buffer, sizeof(buffer), 0);
-	// 		if (nread < 1) { //Error checking
-	// 			printf("Read err\n");
-	// 			close(ns1);
-	// 			close(ns2);
-	// 			exit(-1);
-	// 		} 
-	// 		send(ns2, buffer, nread, 0);
-	// 	}
-	// 	if ( FD_ISSET(ns2, &fds)) {
-	// 		nread = recv(ns2, buffer, sizeof(buffer), 0);
-	// 		if (nread < 1) {
-	// 			close(ns1);
-	// 			close(ns2);
-	// 			exit(-1);
-	// 		}
-	// 		send(ns1, buffer, nread, 0);
-	// 	}
-
-
-	// }
-	connfd = accept(listenfd, (struct sockaddr*) NULL, NULL);
+/*	connfd = accept(listenfd, (struct sockaddr*) NULL, NULL);
 	while(1) {
 
 		if (connfd < 0) {
@@ -92,6 +128,6 @@ int main(int argc, char *argv[]) {
 		//bzero(buffer, sizeof(buffer));
 		//close(connfd);
 	}
-	close(listenfd);
+	close(listenfd);*/
 
 }
