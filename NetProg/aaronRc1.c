@@ -19,51 +19,46 @@ int main(int argc, char *argv[]) {
 
 	if (argc != 4) {
 		printf("Incorrect args: <server IP> <port> <message>\n");
-		exit(0);
+		exit(-1);
 	}
 
 	client_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_socket < 0 ) {
-		printf("errno = %d\n", errno);
-		printf("Error creating socket\n");
-		exit(0);
+		perror("socket");
+		exit(-1);
 	}
 
 	bzero(&Remote_Address, sizeof(Remote_Address));
 	Remote_Address.sin_family = AF_INET;
 	hp = gethostbyname(argv[1]);
 	if (hp == NULL) {
-		printf("errno = %d\n", errno);
-		printf("Host does not exist\n");
-		exit(0);
+		perror("gethostbyname");
+		exit(-1);
 	}
 	if (inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) == 0) {
 		printf("Invalid network address\n");
-		exit(0);
+		exit(-1);
 	} else if ((inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) < 0)) {
-		printf("errno = %d\n", errno);
-		printf("Invalid address family\n");
-		exit(0);
+		perror("inet_pton");
+		exit(-1);
 	}
 	Remote_Address.sin_port = htons(atoi(argv[2]));
 
-	if (connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address)) < 0) {
-		perror("connect");
-		exit(0);
-	}
-
+	connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address));
 	printf("Connection successful\n");
-
 	bzero(buffer, 1024);
 	strcpy(buffer, argv[3]);
 
 	while(1) {
+		select(1, client_socket, client_socket, NULL, NULL);
 		n = write(client_socket, buffer, sizeof(buffer));
-		printf("Write status: %d\n", n);
 		bzero(buffer, 1024);
 		n = read(client_socket, buffer, sizeof(buffer));
-		printf("Read status: %d\n", n);
-		printf("Server msg: %s", buffer);
+		if (n == 0) {
+			printf("Connection to server has been terminated.\n");
+			exit(0);
+		}
+		printf("Server msg: %s\n", buffer);
 		fgets(buffer, sizeof(buffer), stdin);
 	}
 	
