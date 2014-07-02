@@ -34,6 +34,8 @@ Fork
 			If child exit is commented out, the parent process will exit back
 			to the shell since the shell is the parent's parent
 
+			Must do a waitPID when using a fork else they'll pile up
+
 			Error, Proc(ess) table is full. Kill with ctrl + C immediately */
 		main() {
 			int i, j;
@@ -63,7 +65,7 @@ Termination of Child Process
 	In example above, the children become zombies (defunc)
 	When parent process terminates, children terminate
 	Signals
-		/* Starts all children instantly. Parent sleeps. Will catch signal 20 for child 		terminating. All children will not exit at the same time. Will always return at 	least 1 signal but no more than 10. Signals cannot be used as counters 
+		/* Starts all children instantly. Parent sleeps. Will catch signal 20 for child 		terminating. All children will not exit at the same time. Will always return at 	least 1 signal but no more than 10. Signals cannot be used as counters */
 		void SignalInterrupt(int sigtype) {
 			printf("caught a sig %d\n", sigtype);
 			while(1) {
