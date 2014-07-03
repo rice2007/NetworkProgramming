@@ -1,0 +1,34 @@
+Socket
+	Creates an active socket not made for listening
+	agrs create the type of socket and protocol
+Connect
+	Client establishes a connection with a server
+	Initiates 3-way handshake	
+		Syn - Synchronize the initial sequence number for data xmission
+		Syn-Ack - Acknowledge the syn and send own syn
+		Ack - Final ack as an "OK"
+Bind 
+	Assigns an IPv4(32bit)/6(64bit) address to a 16-bit TCP/UDP port
+Listen
+	Only called by TCP server
+	Converts an unconnected socket into a passive socket to accept incoming traffic
+		In xsition diag. moves sockets from closed to listen
+	Must be called before accept()
+	Also creates a queue for inc. SYN packets and a completed connection queue
+Accept
+	Called by server when a socket makes a request
+		Returns new fd in reference to TCP client uneffecting original fd
+Berkley Sockets
+	API for POSIX sockets and de facto std for networking
+	POSIX - 
+Select
+
+Fork
+	Returns twice
+		Firts returns PID of child when called in parent
+		Later returns 0 to indicate that it is child
+	Reasons for call
+		Copy self to handle one operation with other handles something else
+			Used for network servers
+		Process wants to execute another program
+			Copy self with fork then run exec
