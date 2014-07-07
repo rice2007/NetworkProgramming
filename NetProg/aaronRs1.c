@@ -87,14 +87,35 @@ int main(int argc, char *argv[]) {
 			sockfd = client[i];
 			if (FD_ISSET(sockfd, &rset)) {
 				read(sockfd, buffer, sizeof(buffer));
-				if (strcmp(buffer, "end") == 0 || strcmp(buffer, "end\n") == 0) {
-					strcpy(buffer, "Command rcd'v from client. Terminating session.\n");
-					printf("%s\n", buffer);
+				if ((i = fork()) < 0) {
+					//Close socket on fork error.
+					close(sockfd);
+					perror("fork");
+				} else if (i == 0) {
+					if (strcmp(buffer, "end") == 0 || strcmp(buffer, "end\n") == 0) {
+						strcpy(buffer, "Command rcd'v from client. Terminating session.\n");
+						printf("%s\n", buffer);
+						write(sockfd, buffer, sizeof(buffer));
+						close(sockfd);
+						exit(0);
+					}
+					printf("Msg from socket %d: %s\n", sockfd, buffer);
 					write(sockfd, buffer, sizeof(buffer));
+					close(sockfd);
 					exit(0);
+				} else {
+
 				}
-				printf("Msg from socket %d: %s\n", sockfd, buffer);
-				write(sockfd, buffer, sizeof(buffer));
+/*				char *token;
+				token = strtok(buffer, " ");
+				if ((i = fork()) == 0) {
+					execve(token[0], token, 0);
+					perror("execve");
+					exit(0);
+				} else {
+
+				}*/
+
 			}
 		}
 	}
