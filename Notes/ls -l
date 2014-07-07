@@ -1,0 +1,49 @@
+ls -l | more
+pipe 
+	fork 1
+		duplicates pipe command
+	fork 2
+server assignment
+	server runs
+	creates fork on accept
+		*is child:
+		i = fork();
+		if (i == 0){
+			char *argv[4]; //array of pointer to char strings. can be any number of args
+			argv[0] = "/bin/ls"; 
+			argv[1] = "-l";
+			argv[2] = 0 //make last element null pointer to make compiler stop
+			/*First arg is an executable string. Secndond is */
+			execve(argv[0], argv, 0); 
+			perror("execve() failed, error:");
+		};
+		args:
+			0 - pointer to program
+	fork creates another fork to execute command
+		forks will need to copy to stdout/stdin to return info to client
+		can check for end of command with EOF
+		fork must respond to parent, not grandparent
+
+main(int argc, char *argv[]) {
+	int fd - open("file.out", O_WRONLY | O_CREAT, S_IRWXU);
+	printf("before dup2\n");
+	write (fd, "this is data\n", 13);
+	dup2(fd, 1);
+	printf("this is after the dup2\n");
+	clode(fd);
+}
+
+strtok.c
+main() {
+	char *p, buffer[128] = {"this;is a string ;; of     multiple   tokens"};
+	printf("buf=%s\n", buffer);
+	p = strtok(buf, " ;");
+	printf(token = %s\n", p);
+	while (1) {
+		p = strtok(NULL, " ;");
+		if (!p) break;
+		printf("token = %s\n", p);
+	}
+	//buffer is cleared in this fashion
+	printf(buffer = %s\n", buffer);
+}
