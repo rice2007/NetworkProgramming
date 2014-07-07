@@ -1,0 +1,19 @@
+SSH
+	single socket connecting to something remote
+	receives information back from remote
+	Finite state machine
+		stdin > SSH send > remote rcv > remote send > SSH rcv > stdout
+		does not work in a single packet in, single packet out manner
+		if both attempt to read, deadlock
+	Solution
+		system call select() - block until I can do IO
+			nfds - 
+			fd_set *restrict readfds - bit array (0 or 1) to tell if there is data (set null)
+			fd_set *restrict writefds - (set null)
+			fd_set *restrict errorfds - alerts of error (set null)
+			timeout - gives a window for a response. will not read msg after timeout (set null)
+		do a 
+
+server has multiple descriptor that echo's whatever is read
+
+C-Tip, when arg has * in front of it, it much have an & in front of it
