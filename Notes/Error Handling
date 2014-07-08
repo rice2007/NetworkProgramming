@@ -1,0 +1,15 @@
+Error Handling
+
+errNo
+	Handle errors
+	Do not set errNo to anything else it will not operate correvctly
+	Do not use errNo if system call did no fail
+	If hostname does not exist, then will return error code 0
+	Do not memorize error numbers
+	-ll
+
+server terminates connection on end from client
+String compare
+	String is n+1 bytes
+	To compare, compare string + 0
+	0 for null terminal
