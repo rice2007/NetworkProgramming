@@ -1,0 +1,107 @@
+User Datagram Protocol
+	not connection oriented	
+		if message is sent without recipient, it's gone
+	message oriented
+		if message is 1000 bytes and 100 bytes rec'd, 900 bytes lost
+		message must be buffered when sending
+			if buffer is full at any hop on connection, that part of data is lost
+	connection
+		message is sent along hops
+		messages can keep going outbound
+		when message is rec'd response must be sent back
+		sender must have a predefined time after which message is resent
+		if sender resends
+			rec must know if message is same as before
+	error
+		send message
+		wait for response
+			resend msg if no response 
+	broadcast
+		anyone listening on port will receieve a mdg
+		msg is only sent once
+		how
+			create a broadcast address
+	quirks
+		source address checking
+			checks the source address to ensure the message is from a valid source
+
+udpclient:
+main(int argc, char* argv[]) {
+	struct sockaddr)in client, from, server;
+	srtuct hostend *hp;
+	int my_socket;
+	char buf[512];
+	int bytesl
+	unsigned int fromlen;
+
+	my_socket = (AF_Inet,Scok_DGRAM,0);
+	hp = gethostbyname(argvv[1]);
+	server.sin_family=AF_INET;
+	memcpy()
+
+	server.sin_port=htons(4096);
+
+	bytes =sendto(mysocket, argv[2], srlen(argv[2]) + 1, 0 (struct sockaddr *) &server, sizeof(server));
+
+	fromlen=sizeof(from); //reset because size may get changed between IPv4/6
+	/*Blocks until data is received on port. If server on other end terminates, doesn't matter.*/
+	bytes=recvfrom(my_socket,buf,512,0,(struct sockaddr *) &from, &fromlen);
+	printf("%d bytes from IP %s (%s)\n", buytes, inet_ntoa(from.sin_addr),buf);
+	close(my_socket);
+}
+
+//may want to compare sent bytes to rec'v bytes for error checking
+udpserver
+main() {
+	//same stuff
+	bind(my_socket, (struct sockaddr *) &server, sizeof(server));
+
+	while(1) {
+		printf();
+		bytes=recvfrom()
+		printf();
+		if(!strcmp(buf,"quit")) {
+			break;
+		}
+		strcpy(buf,"OK");
+
+	}
+}
+
+broadcast client
+main() {
+	struct sockaddr_in slint, from, server;
+	struct hostend *hp;
+	int my_socket;
+	char buf[]
+	int bytes;
+	insigned int fromlen;
+	int on = 1, off = 0, x;
+
+	my_socket=;
+	hp=;
+	server.sin_family;
+	memcpy((unsigned char*) &server.sin_addr, (unsigned char*)hp->h_addr, hp->h_length);
+
+	server.sin_port=htons(4096);
+	x = setsockopt(my_socket,SQL_SOCKET,SO_BROADCAST,&on,4);
+	/*ORs the IP to get broadcast address. Will not be the same bitmask on all networks*/
+	server.sin_addr.s_addr|=htonl(0x1ff);
+	printf("broadcast addy = %s\n", inet_ntoa(server.sin_addr));
+	bytes=sendto(my_socket, argv[2], strlen(argv[2]) + 1, 0, (struct sockaddr *) &server,
+		sizeof(server));
+	/*Turns off receiving of the broadcast msg to self*/
+	x=setsockopt(...&off...);
+	/*Should let the recvfrom run for some given time. This ensures that the response is received from all of the hosts. Without waiting, there is no error recovery. Can be handled by having remote host send the "serial" of the msg.*/
+	while(1) {
+		fromlen=sizeof(from);
+		bytes=recvfrom(mysocket,buf,512,0(struct sockaddr *), &from, &fromlen);
+		printf("read bytes from IP")
+	
+	}
+	close(my_socket);
+}
+
+Assignment
+	Force packet loss without setting the buffer size 0.
+	Write a cli/serv where at least one loses packets. Once the packet is lost, have the sender resend the packet to recipient.
