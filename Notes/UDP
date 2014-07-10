@@ -24,6 +24,8 @@ User Datagram Protocol
 	quirks
 		source address checking
 			checks the source address to ensure the message is from a valid source
+		stateless
+			request is made, the response will be everything needed hand the request
 
 udpclient:
 main(int argc, char* argv[]) {
@@ -104,4 +106,28 @@ main() {
 
 Assignment
 	Force packet loss without setting the buffer size 0.
-	Write a cli/serv where at least one loses packets. Once the packet is lost, have the sender resend the packet to recipient.
+	Write a cli/serv where at least one loses packets. Once the packet is lost, have the sender resend the packet to recipient. Packet loss should be on the server side.
+		Packet loss can by caused by changing the timeout value in select. Set it too low, and there will be packet loss.
+		Also try overflowing the buffer of the server
+
+Topology & Error Handling
+	Under UDP in network of A>X>B or A>Y1>Y2>B
+	Shown to users as A>?>B with ? being unknown and ever-changing
+	To know if packet arrive, response must be sent
+		Not specified in the protocol, so code for ACK (including on a per packet basis) must be implemented
+		Must save packets in case ACK isn't received.
+
+	Timeouts
+		Must be Time1 + Time2 + TimeF
+		Time is too short if
+			Eats up bandwidth by resending packets too often
+		Time is too without actually knowing
+			Will have transmit dips in graph
+		Good rate is one packet dropped per error window
+		Make the error rate malleable
+			On timeout, put the error window upwards.
+			Slowly move the timeout window back towards minimum
+		Setting the Timeout
+			select(fds, fdread, fdwrite, timeout)
+				timeout has two values within it
+	Sequence packets by starting w/ a 32bit int and increaing the counter

@@ -42,6 +42,9 @@ Select
 		Get data from the client
 	Returns
 		return value -1 is an error
+	Prevents blocking 
+		Client must read from the keyboard and server
+		IF client tried to read from keyboard without input, the client cannot read from server
 
 	e.g.
 
