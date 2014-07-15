@@ -1,0 +1,14 @@
+Remote Procedure Call Program
+program DATE_PROG {
+	version DATE_VERS {
+		long BIN_DATE(void)=1;
+		string STR_DATE(long)=2;
+	} = 1;
+} = 0x31234567 //public RPC number
+
+Allows different versions to run without interrupting prior versions
+Cannot have the same RPC number that someone else is running
+Commands	
+	rpcgen -a <filename>.x
+	Will generate appropriate C files from code
+	make -f <filename>
