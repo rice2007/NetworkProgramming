@@ -1,3 +1,4 @@
+/*
 
 
 int main(int argc, char* argv[]) {
@@ -23,4 +24,5 @@ int main(int argc, char* argv[]) {
 		&fromLength);
 	printf("%d bytes from IP %s (%s)\n", byteSize, inet_ntoa(from.sin_addr), buffer);
 	close(clientSocket);
-}
+	return 1;
+}*/

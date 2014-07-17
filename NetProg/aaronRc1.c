@@ -13,12 +13,14 @@
 int main(int argc, char *argv[]) {
 
 	char buffer[1024];
-	int client_socket, n;
+	int client_socket, maxfd, n;
 	struct sockaddr_in Remote_Address;
 	struct hostent *hp;
+	fd_set rset;
+	FILE *infd;
 
-	if (argc != 4) {
-		printf("Incorrect args: <server IP> <port> <message>\n");
+	if (argc <= 2) {
+		printf("Incorrect args: <server IP> <port>\n");
 		exit(-1);
 	}
 
@@ -44,23 +46,36 @@ int main(int argc, char *argv[]) {
 	}
 	Remote_Address.sin_port = htons(atoi(argv[2]));
 
+	FD_ZERO(&rset);
 	connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address));
 	printf("Connection successful\n");
+	printf("Enter <command> [args]:\n");
 	bzero(buffer, 1024);
-	strcpy(buffer, argv[3]);
+	fgets(buffer, sizeof(buffer), stdin);
 
 	while(1) {
-		select(1, client_socket, client_socket, NULL, NULL);
-		n = write(client_socket, buffer, sizeof(buffer));
-		bzero(buffer, 1024);
-		n = read(client_socket, buffer, sizeof(buffer));
-		if (n == 0) {
-			printf("Connection to server has been terminated.\n");
-			exit(0);
+		FD_SET(client_socket, &rset);
+		FD_SET(fileno(infd), &rset);
+		maxfd = client_socket;
+		if(select(maxfd + 2, &rset, NULL, NULL, NULL) < 0) {
+			perror("select");
 		}
-		printf("Server msg: %s\n", buffer);
-		fgets(buffer, sizeof(buffer), stdin);
+		if (FD_ISSET(client_socket, &rset)) {
+			n = read(client_socket, buffer, sizeof(buffer));
+			if (n == 0) {
+				printf("Connection to server has been terminated.\n");
+				exit(0);
+			}
+			printf("Msg from server: %s", buffer);
+		}
+		if (FD_ISSET(fileno(infd), &rset)) {
+			n = write(client_socket, buffer, sizeof(buffer));
+			if (n < 1) {
+				break;
+			}
+			bzero(buffer, 1024);
+			fgets(buffer, sizeof(buffer), stdin);
+		}
 	}
-	
 	exit(0);
 }
