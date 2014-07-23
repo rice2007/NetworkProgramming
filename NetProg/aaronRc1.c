@@ -21,13 +21,13 @@ int main(int argc, char *argv[]) {
 
 	if (argc <= 2) {
 		printf("Incorrect args: <server IP> <port>\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	client_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_socket < 0 ) {
 		perror("socket");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	bzero(&Remote_Address, sizeof(Remote_Address));
@@ -35,19 +35,23 @@ int main(int argc, char *argv[]) {
 	hp = gethostbyname(argv[1]);
 	if (hp == NULL) {
 		perror("gethostbyname");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	if (inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) == 0) {
 		printf("Invalid network address\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	} else if ((inet_pton(AF_INET, argv[1], &Remote_Address.sin_addr) < 0)) {
 		perror("inet_pton");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	Remote_Address.sin_port = htons(atoi(argv[2]));
 
 	FD_ZERO(&rset);
-	connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address));
+	n = connect(client_socket, (struct sockaddr *) &Remote_Address, sizeof(Remote_Address));
+	if (n < 0) {
+		perror("connect");
+		exit(EXIT_FAILURE);
+	}
 	printf("Connection successful\n");
 	printf("Enter <command> [args]:\n");
 	bzero(buffer, 1024);
@@ -64,7 +68,10 @@ int main(int argc, char *argv[]) {
 			n = read(client_socket, buffer, sizeof(buffer));
 			if (n == 0) {
 				printf("Connection to server has been terminated.\n");
-				exit(0);
+				exit(EXIT_SUCCESS);
+			} else if (n < 0 ) {
+				perror("read");
+				exit(EXIT_FAILURE);
 			}
 			printf("Msg from server: %s", buffer);
 		}
@@ -72,10 +79,13 @@ int main(int argc, char *argv[]) {
 			n = write(client_socket, buffer, sizeof(buffer));
 			if (n < 1) {
 				break;
+			} else if (n < 0) {
+				perror("write");
+				exit(EXIT_FAILURE);
 			}
 			bzero(buffer, 1024);
 			fgets(buffer, sizeof(buffer), stdin);
 		}
 	}
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
