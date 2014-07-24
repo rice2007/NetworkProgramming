@@ -9,13 +9,14 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
 
 	char buffer[1024];
 	int client[FD_SETSIZE], connfd, listenfd, maxfd, sockfd;
-	int err, i, maxi, n;
+	int err, i, maxi, pidStatus, selStatus;
 	struct sockaddr_in client_addr, server_addr;
 	fd_set rset, allset;
 	socklen_t client_length;
@@ -58,8 +59,8 @@ int main(int argc, char *argv[]) {
 	a client enters end, the server shuts down.*/
 	while(1) {
 		rset = allset; 
-		n = select(maxfd + 1, &rset, NULL, NULL, NULL);
-		if (n < 0) {
+		selStatus = select(maxfd + 1, &rset, NULL, NULL, NULL);
+		if (selStatus < 0) {
 			perror("select");
 		}
 		if (FD_ISSET(listenfd, &rset)) {
@@ -87,35 +88,56 @@ int main(int argc, char *argv[]) {
 			sockfd = client[i];
 			if (FD_ISSET(sockfd, &rset)) {
 				read(sockfd, buffer, sizeof(buffer));
-				if ((i = fork()) < 0) {
-					//Close socket on fork error.
-					close(sockfd);
-					perror("fork");
-				} else if (i == 0) {
-					if (strcmp(buffer, "end") == 0 || strcmp(buffer, "end\n") == 0) {
-						strcpy(buffer, "Command rcd'v from client. Terminating session.\n");
-						printf("%s\n", buffer);
-						write(sockfd, buffer, sizeof(buffer));
-						close(sockfd);
-						exit(0);
-					}
-					printf("Msg from socket %d: %s\n", sockfd, buffer);
+				if (strcmp(buffer, "end") == 0 || strcmp(buffer, "end\n") == 0) {
+					strcpy(buffer, "Command rcd'v from client. Terminating session.");
+					printf("%s\n", buffer);
 					write(sockfd, buffer, sizeof(buffer));
 					close(sockfd);
 					exit(0);
-				} else {
+				}
+				*argv = &buffer[0];
+				argv[1] = 0;
+				printf("buffer:%s\n", buffer);
+				printf("argv:%s\n", *argv);
+				printf("argv[0]:%s\n", argv[0]);
+				printf("argv[1]:%s\n", argv[1]);
+				//*argv = strtok_r(*argv, " ", argv);
+
+				printf("argv:%s\n", *argv);
+
+/*				*tokenArgs = strtok_r(*argv, " ", argv);
+				if (tokenArgs) {
+					printf("tokenIf: %s\n", *tokenArgs);
+				}
+				while ((*tokenArgs = strtok_r(NULL, " ", argv)) != NULL) {
+					printf("tokenWhile: %s\n", tokenArgs);
+				}*/
+/*				int i;
+				for (i = 0; i < sizeof(buffer); i++) {
+					*tokenArgs = strtok_r(NULL, " ", &tokenPtr)
+					if (tokenArgs == NULL) {
+						break;
+					}
 
 				}
-/*				char *token;
-				token = strtok(buffer, " ");
-				if ((i = fork()) == 0) {
-					execve(token[0], token, 0);
-					perror("execve");
+				printf("token:%s\n", *token);*/
+
+				i = fork();
+				if (i < 0) {
+					//Close socket on fork error.
+					perror("fork");
+					exit(-1);
+				} else if (i == 0) {
+/*					char *argv[1024];
+					strcpy(*argv[0], buffer[0]);*/
+					//close(sockfd);
+					execve(argv[0], argv, 0);
 					exit(0);
 				} else {
+					waitpid(i, &pidStatus, WNOHANG);
+					//close(sockfd);
 
-				}*/
-
+				}
 			}
 		}
 	}
