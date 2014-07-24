@@ -1,0 +1,22 @@
+MAC Address	
+	Used to communicate within a network
+	Address Resolution Protocol (ARP)
+		Hub can ask what nic has a specific IP
+		NIC responds with the MAC matched to IP
+	Encapsulation
+		On outside network, router must send to the network hub
+		Hub then finds specific machine MAC
+	Broadcast
+		All MAC interfaces will accept packets on broadcast FF:FF:FF:FF:FF:FF
+		Broadcast address triggers an interrupt
+			Under DHCP, its used on boot to request local IP
+
+Conferences
+	UPD
+		Originator send connection to a hub. The hub can broadcast packets over network
+		Would not discriminate between who wants packet and who doesn't
+	Multicast
+		Multicast MAC address - 00:01:5E:-:-:-
+		"Subscription" based connection that sends packets once and duplicated where necessary
+		Tells hubs that whenever a packet to multicast address is sent, forward it
+		Anyone at any hop can join fater route is set up
