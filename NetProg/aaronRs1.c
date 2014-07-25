@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
 			sockfd = client[i];
 			if (FD_ISSET(sockfd, &rset)) {
 				read(sockfd, buffer, sizeof(buffer));
+				strcpy(*argv, buffer);
 				if (strcmp(buffer, "end") == 0 || strcmp(buffer, "end\n") == 0) {
 					strcpy(buffer, "Command rcd'v from client. Terminating session.");
 					printf("%s\n", buffer);
@@ -95,16 +96,17 @@ int main(int argc, char *argv[]) {
 					close(sockfd);
 					exit(0);
 				}
-				*argv = &buffer[0];
-				argv[1] = 0;
+/*				*argv = &buffer[0];
+				argv[1] = 0;*/
 				printf("buffer:%s\n", buffer);
 				printf("argv:%s\n", *argv);
 				printf("argv[0]:%s\n", argv[0]);
 				printf("argv[1]:%s\n", argv[1]);
-				//*argv = strtok_r(*argv, " ", argv);
+				*argv = strtok_r(*argv, " ", argv);
 
 				printf("argv:%s\n", *argv);
-
+				printf("Msg from socket %d: %s\n", sockfd, buffer);
+				write(sockfd, buffer, sizeof(buffer));
 /*				*tokenArgs = strtok_r(*argv, " ", argv);
 				if (tokenArgs) {
 					printf("tokenIf: %s\n", *tokenArgs);
