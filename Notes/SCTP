@@ -1,0 +1,25 @@
+Stream Control Transmission Protocol
+Combines TCP/IP with UDP
+	Can start off with a UDP broadcast to find servers and switch to TCP for direct connections
+		Gives new sockets
+		Still uses SCTP model
+One-to-One Model
+	Just like TCP/IP
+	Establishes a point-to-point connection
+	Has own send and receive methods, but can use standard system calls
+	Server Model
+		Socket, bind, connect, accept, read, write just like TCP/IP
+		Must worry about message boundaries	
+One-to-Many
+	Just like UDP
+	Server
+		socket, bind, listen, sctp_rcv, sctp_send as normal
+		scpt_peeloff
+			Says SCTP is using one-to-many but wants to use one-to-one
+			Will create a new socket using the one-to-one model
+				Must be executed on both sides
+Message Boundaries
+	Write and read are 1:1 needed.
+	For every write called, there must be a read
+		Compare to TCP where you can do 3 writes, 1 read, and receieve everything
+	Whatever is sent from one side, the other side must be ready to read the stream of that many bytes

@@ -116,6 +116,8 @@ Topology & Error Handling
 	To know if packet arrive, response must be sent
 		Not specified in the protocol, so code for ACK (including on a per packet basis) must be implemented
 		Must save packets in case ACK isn't received.
+	If server can't receive packets at the moment, the sit in local machine's buffer
+		Buffer is finite and will be over-written
 
 	Timeouts
 		Must be Time1 + Time2 + TimeF

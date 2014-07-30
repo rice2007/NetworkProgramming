@@ -1,0 +1,12 @@
+inetd
+	listens on designated ports for traffic to open appropriate server program
+	port must be defined in etc/services
+	calls fork where child passes it to a given program
+	if a port is bound to, inetd will not execute
+		if port is free, inetd will forward it appropriately
+	more efficient, because server executes only when needed and shuts down when completed
+gateways
+	machines on local network can directly message each other
+	if no directly connected, machine must send to the default gateway
+		default gateway will send to their default gateway (usually towards the outside of the network to the public) if they do not know address
+		generally speaking, the more interior (closer to a local network) a machine, the larger the routing table

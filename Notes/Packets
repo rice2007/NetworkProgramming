@@ -7,7 +7,7 @@ MAC Address
 		On outside network, router must send to the network hub
 		Hub then finds specific machine MAC
 	Broadcast
-		All MAC interfaces will accept packets on broadcast FF:FF:FF:FF:FF:FF
+		All MAC interfaces will accept packets on broadcats FF:FF:FF:FF:FF:FF
 		Broadcast address triggers an interrupt
 			Under DHCP, its used on boot to request local IP
 
