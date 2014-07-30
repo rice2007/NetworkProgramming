@@ -42,17 +42,31 @@ int main(int argc, char* argv[]) {
 	serverAddr.sin_addr.s_addr |= htonl(0x1ff);
 	printf("bcast address: %s\n", inet_ntoa(serverAddr.sin_addr));
 	optInt = setsockopt(clientfd, SOL_SOCKET, SO_BROADCAST, &off, 4);
-	while (i < 10) {
-		recvfrom(clientfd, buffer, 1024, 0, (struct  sockaddr*) &fromAddr,
+
+	while (i < 2) {
+		strcpy(buffer, "Probing for listeners\n");
+		sendErr = sendto(clientfd, buffer, strlen(buffer) + 1, 0,
+			(struct sockaddr*) &serverAddr, sizeof(serverAddr));
+		if (sendErr < 0) {
+			perror("sendto");
+		}
+		printf("%d bytes from IP %s: %s\n", byteSize, inet_ntoa(fromAddr.sin_addr), buffer);
+		byteSize = recvfrom(clientfd, buffer, 1024, 0, (struct  sockaddr *) &fromAddr,
 			&fromLength);
-		sleep(1);
+		if (byteSize < 0) {
+			perror("recvfrom");
+		}
+		sleep(3);
 		i++;	
 	}
-	//memcpy();
 
+
+	//memcpy();
+	printf("Permaloop\n");
 	while (1) {
 		fgets(buffer, sizeof(buffer), stdin);
-		sendErr = sendto(clientfd, argv[1], strlen(argv[1]) + 1, 0,
+		printf("buffer: %s\n", buffer);
+		sendErr = sendto(clientfd, buffer, strlen(buffer) + 1, 0,
 			(struct sockaddr*) &serverAddr, sizeof(serverAddr));
 		if (sendErr < 0) {
 			perror("sendto");
@@ -60,8 +74,8 @@ int main(int argc, char* argv[]) {
 		fromLength = sizeof(fromAddr);
 		byteSize = recvfrom(clientfd, buffer, 1024, 0, (struct  sockaddr*) &fromAddr,
 			&fromLength);
-/*		printf("%d bytes from IP %s (%s)\n", byteSize, inet_ntoa(from.sin_addr), buffer);
-		close(clientfd);*/
+		printf("%d bytes from IP %s: %s\n", byteSize, inet_ntoa(fromAddr.sin_addr), buffer);
+		close(clientfd);
 	}
 	return 1;
 }

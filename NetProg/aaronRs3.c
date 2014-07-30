@@ -18,9 +18,8 @@ int main(int argc, char* argv[]) {
 
 	char buffer[1024];
 	int bindErr, byteSize, sendErr, serverfd;
-	int on = 1, off = 0;
 	unsigned int fromLength;
-	struct sockaddr_in slint, fromAddr, serverAddr;
+	struct sockaddr_in fromAddr, serverAddr;
 
 	serverfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (serverfd < 0) {
@@ -36,20 +35,17 @@ int main(int argc, char* argv[]) {
 		perror("bind");
 		exit(-1);
 	}
-	//memcpy();
 
 	while(1) {
 		fromLength = sizeof(fromAddr);
 		byteSize = recvfrom(serverfd, buffer, 1024, 0, (struct sockaddr *) &fromAddr,
 			&fromLength);
-		printf("%s\n", buffer);
 		if (byteSize < 0) {
 			perror("recvfrom");
 		} else if (byteSize == 0) {
 			printf("Client %d has disconnected.", serverAddr.sin_addr.s_addr);
 		} else {
-			printf("%d bytes from IP %s (%s)\n", byteSize, inet_ntoa(serverAddr.sin_addr), buffer);
-			printf("Rec'd msg: %s\n", buffer);
+			printf("%d bytes from IP %s: %s", byteSize, inet_ntoa(serverAddr.sin_addr), buffer);
 			if (!strcmp(buffer, "end")) {
 				printf("Shutdown cmd rec'd.");
 				exit(0);
