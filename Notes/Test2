@@ -1,0 +1,66 @@
+SCTP
+ 	Offers UDP and TCP behaviorss
+	one-to-one
+		TCP-like behavior
+		preserves msg bounds
+	one-to-many
+		UDP-llike behavior
+		client closes, server closes as well
+		sctp_peeloff
+			branches a single connection to use the 1-to-1 model.
+			return -1 and sets errno as needed on fail
+			returns new descriptor on success
+		cannot use send or write functions
+	Message Boundaries
+		Write:Read 1:1 ratio needed
+		Whatever is written to one side, the other must be ready to read that amount
+	Interfaces
+UDP
+	Message Oriented
+		Data is sent in "message" rather than continuous stream
+		Either entire message arrives at once, or it is discarded
+		If message buffer is full, the data is discarded
+			Buffer size is machine based
+	Error Handling
+		No innate error handles
+		Can use MSG_WAITALL to tell how many bytes should be read
+		Error Rates
+			Should be malleable to check for dropped packets at one packet per window
+			Set the initial error rate high and shrink to minimum
+				On error, increase the error window
+		Packet Sequencing
+			Set an int and increase counter on each send
+			On error, retrieve message associated and resend
+Data and Packets
+	MAC Address is main way machines identify each other
+	IPs are secondary layer to outside world for ID
+	ARP
+		Converts IP address to a hardware (MAC) address
+		Internal switch can request MAC associated with LAN IP to deliver message
+	Encapsulation
+		External machines do not have access to MACs
+		Internal switch will probe to find proper machine
+	MAC Broadcast
+		All FF
+		All interfaces will read a MAC broadcast since it causes an interrupt
+		Can be used on DHCP to have local machine request an IP
+	Multicast
+		"Subscriber" connection that send packets to targeted machines with the multicast address
+		Host sends multicast packets along routes
+			If hop has subscribed user, hop forwards packet
+			When multiple subscribers are found, the packet is cloned at the last possible hop
+RPC
+	Allows a program or routine to execute in a separate address space (different machine or process)
+	Can add update without breaking past implementations
+	Cannot has same public RPC number
+	rpcgen
+		Creates a set of C files to use the RPC protocol from a single file
+inet_d
+	internet service daemon
+	superserver that listens on specific ports and execute appropriate programs using fork if port is free
+	gets ports from /etc/services
+gateways
+	only local machines can communicate
+	address is not found, it is handled by the default gateway
+		default will try to find appropriate machine
+		if cannot find, default forwards to its default
